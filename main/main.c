@@ -1,28 +1,24 @@
 #include <stdio.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "dht11.h"
+#include "dht.h"
 
-#define DHT11_GPIO GPIO_NUM_27
+#define DHT_GPIO 27
+#define DHT_TYPE DHT_TYPE_DHT11
 
 void app_main(void) {
-    printf("🚀 Starting app_main\n");
-
-    dht11_init(DHT11_GPIO);
-    printf("✅ DHT11 initialized on GPIO 26\n");
-
-    vTaskDelay(pdMS_TO_TICKS(1000));  // wait 1 second before first read
+    printf("🌡️  Starting DHT test\n");
 
     while (1) {
-        printf("🔄 Reading from DHT11...\n");
-        dht11_reading_t result = dht11_read();
+        float temperature = 0, humidity = 0;
+        esp_err_t res = dht_read_float_data(DHT_TYPE, DHT_GPIO, &humidity, &temperature);
 
-        if (result.temperature != -1 && result.humidity != -1) {
-            printf("🌡️  Temp: %d°C  💧 Humidity: %d%%\n", result.temperature, result.humidity);
+        if (res == ESP_OK) {
+            printf("✅ Temp: %.1f°C, Humidity: %.1f%%\n", temperature, humidity);
         } else {
-            printf("⚠️  Failed to read from DHT11\n");
+            printf("⚠️  Failed to read from DHT sensor\n");
         }
 
-        vTaskDelay(pdMS_TO_TICKS(4000));
+        vTaskDelay(pdMS_TO_TICKS(2000));
     }
 }
