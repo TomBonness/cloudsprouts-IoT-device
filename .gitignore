@@ -3,3 +3,5 @@ sdkconfig
 sdkconfig.old
 .DS_Store
 components/esp_idf_lib_helpers/LICENSE
+.vscode
+.gitattributes
