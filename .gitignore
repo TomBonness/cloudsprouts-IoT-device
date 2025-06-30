@@ -3,5 +3,13 @@ sdkconfig
 sdkconfig.old
 .DS_Store
 components/esp_idf_lib_helpers/LICENSE
-.vscode
+.vscode/
 .gitattributes
+certs/
+*.pem
+*.crt
+*.key
+main/certs/*.pem*
+wifi_config.txt
+certs.c
+.vscode/settings.json
