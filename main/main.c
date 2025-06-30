@@ -13,6 +13,7 @@
 #include "esp_netif.h"
 #include "freertos/event_groups.h"
 #include "certs.h"
+#include "esp_sntp.h"
 
 
 #define BROKER_URI "mqtts://a3jxj8x3d0brjo-ats.iot.us-east-1.amazonaws.com"
@@ -85,6 +86,30 @@ static void mqtt_app_start(void) {
     esp_mqtt_client_start(client);
 }
 
+static void obtain_time(void) {
+    sntp_setoperatingmode(SNTP_OPMODE_POLL);
+    sntp_setservername(0, "pool.ntp.org"); // standard public NTP
+    sntp_init();
+
+    time_t now = 0;
+    struct tm timeinfo = { 0 };
+    int retry = 0;
+    const int retry_count = 10;
+
+    while (timeinfo.tm_year < (2024 - 1900) && ++retry < retry_count) {
+        ESP_LOGI("SNTP", "Waiting for system time to be set... (%d/%d)", retry, retry_count);
+        vTaskDelay(2000 / portTICK_PERIOD_MS);
+        time(&now);
+        localtime_r(&now, &timeinfo);
+    }
+
+    if (retry < retry_count) {
+        ESP_LOGI("SNTP", "✅ Time synchronized: %s", asctime(&timeinfo));
+    } else {
+        ESP_LOGW("SNTP", "❌ Failed to sync time.");
+    }
+}
+
 void app_main(void) {
     // Init NVS (required for WiFi)
     esp_err_t ret = nvs_flash_init();
@@ -94,6 +119,7 @@ void app_main(void) {
     }
 
     wifi_init_sta();
+    obtain_time();
     mqtt_app_start();
 
     printf("🌡️  Starting DHT test\n");

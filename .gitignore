@@ -13,3 +13,4 @@ main/certs/*.pem*
 wifi_config.txt
 certs.c
 .vscode/settings.json
+.vscode/settings.json
