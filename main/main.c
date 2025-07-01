@@ -15,7 +15,6 @@
 #include "certs.h"
 #include "esp_sntp.h"
 
-
 #define BROKER_URI "mqtts://a3jxj8x3d0brjo-ats.iot.us-east-1.amazonaws.com"
 #define DHT_GPIO 27
 #define DHT_TYPE DHT_TYPE_DHT11
@@ -131,19 +130,25 @@ void app_main(void) {
         if (res == ESP_OK) {
             printf("✅ Temp: %.1f°C, Humidity: %.1f%%\n", temperature, humidity);
 
-            //time
             time_t now;
             time(&now);
+
             char timestamp_str[32];
             strftime(timestamp_str, sizeof(timestamp_str), "%FT%TZ", gmtime(&now));
+
+            char hourkey_str[14];
+            strncpy(hourkey_str, timestamp_str, 13);
+            hourkey_str[13] = '\0';
 
             cJSON *root = cJSON_CreateObject();
             cJSON_AddStringToObject(root, "deviceID", "esp32-dht11");
             cJSON_AddNumberToObject(root, "temperature", temperature);
             cJSON_AddNumberToObject(root, "humidity", humidity);
             cJSON_AddStringToObject(root, "timestamp", timestamp_str);
+            cJSON_AddStringToObject(root, "hourKey", hourkey_str);
+
             char *json_str = cJSON_PrintUnformatted(root);
-            printf("📤 Publishing JSON: %s\n", json_str); // delete later
+            printf("📤 Publishing JSON: %s\n", json_str);
             cJSON_Delete(root);
 
             if (client && json_str) {
@@ -155,6 +160,6 @@ void app_main(void) {
             printf("⚠️  Failed to read from DHT sensor\n");
         }
 
-        vTaskDelay(pdMS_TO_TICKS(150000));
+        vTaskDelay(pdMS_TO_TICKS(150000)); // 2.5 minutes
     }
 }
