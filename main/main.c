@@ -155,6 +155,6 @@ void app_main(void) {
             printf("⚠️  Failed to read from DHT sensor\n");
         }
 
-        vTaskDelay(pdMS_TO_TICKS(5000));
+        vTaskDelay(pdMS_TO_TICKS(150000));
     }
 }
